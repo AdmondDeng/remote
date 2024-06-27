@@ -2,3 +2,6 @@ Debug
 transmitter_c8 Debug.launch
 .settings
 receiver_c8 Debug.launch
+Hw_Transmitter/transmitter/transmitter-backups
+Hw_Receiver/receiver/receiver-backups
+Hw_Transmitter/transmitter/_autosave-transmitter.kicad_pcb
