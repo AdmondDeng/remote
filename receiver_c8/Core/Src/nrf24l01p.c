@@ -76,8 +76,8 @@ void nrf24l01p_rx_init(channel MHz, air_data_rate bps)
     nrf24l01p_set_crc_length(1);
     nrf24l01p_set_address_widths(5);
 
-    nrf24l01p_auto_retransmit_count(3);
-    nrf24l01p_auto_retransmit_delay(250);
+    //nrf24l01p_auto_retransmit_count(3);
+    //nrf24l01p_auto_retransmit_delay(4000);
     
     ce_high();
 }
@@ -97,7 +97,8 @@ void nrf24l01p_tx_init(channel MHz, air_data_rate bps)
     nrf24l01p_set_address_widths(5);
 
     nrf24l01p_auto_retransmit_count(3);
-    nrf24l01p_auto_retransmit_delay(250);
+    // minimal 500us in 250K mode
+    nrf24l01p_auto_retransmit_delay(4000);
 
     ce_high();
 }
@@ -149,8 +150,8 @@ void nrf24l01p_reset()
     write_register(NRF24L01P_REG_SETUP_AW, 0x03);
     write_register(NRF24L01P_REG_SETUP_RETR, 0x03);
     write_register(NRF24L01P_REG_RF_CH, 0x02);
-    write_register(NRF24L01P_REG_RF_SETUP, 0x07);
-    write_register(NRF24L01P_REG_STATUS, 0x7E);
+    write_register(NRF24L01P_REG_RF_SETUP, 0x0E);
+    write_register(NRF24L01P_REG_STATUS, 0x70);
     write_register(NRF24L01P_REG_RX_PW_P0, 0x00);
     write_register(NRF24L01P_REG_RX_PW_P0, 0x00);
     write_register(NRF24L01P_REG_RX_PW_P1, 0x00);
@@ -158,7 +159,7 @@ void nrf24l01p_reset()
     write_register(NRF24L01P_REG_RX_PW_P3, 0x00);
     write_register(NRF24L01P_REG_RX_PW_P4, 0x00);
     write_register(NRF24L01P_REG_RX_PW_P5, 0x00);
-    write_register(NRF24L01P_REG_FIFO_STATUS, 0x11);
+    write_register(NRF24L01P_REG_FIFO_STATUS, 0x00);
     write_register(NRF24L01P_REG_DYNPD, 0x00);
     write_register(NRF24L01P_REG_FEATURE, 0x00);
 
@@ -170,7 +171,7 @@ void nrf24l01p_reset()
 void nrf24l01p_prx_mode()
 {
     uint8_t new_config = read_register(NRF24L01P_REG_CONFIG);
-    new_config |= 1 << 0;
+    new_config |= (1 << 0);
 
     write_register(NRF24L01P_REG_CONFIG, new_config);
 }
@@ -278,7 +279,7 @@ void nrf24l01p_clear_max_rt()
 void nrf24l01p_power_up()
 {
     uint8_t new_config = read_register(NRF24L01P_REG_CONFIG);
-    new_config |= 1 << 1;
+    new_config |= (1 << 1);
 
     write_register(NRF24L01P_REG_CONFIG, new_config);
 }
@@ -303,7 +304,7 @@ void nrf24l01p_set_crc_length(length bytes)
             break;
         // CRCO bit in CONFIG resiger set 1
         case 2:
-            new_config |= 1 << 2;
+            new_config |= (1 << 2);
             break;
     }
 
@@ -320,7 +321,7 @@ void nrf24l01p_auto_retransmit_count(count cnt)
     uint8_t new_setup_retr = read_register(NRF24L01P_REG_SETUP_RETR);
     
     // Reset ARC register 0
-    new_setup_retr |= 0xF0;
+    new_setup_retr &= 0xF0;
     new_setup_retr |= cnt;
     write_register(NRF24L01P_REG_SETUP_RETR, new_setup_retr);
 }
@@ -330,8 +331,8 @@ void nrf24l01p_auto_retransmit_delay(delay us)
     uint8_t new_setup_retr = read_register(NRF24L01P_REG_SETUP_RETR);
 
     // Reset ARD register 0
-    new_setup_retr |= 0x0F;
-    new_setup_retr |= ((us / 250) - 1) << 4;
+    new_setup_retr &= 0x0F;
+    new_setup_retr |= (((us / 250) - 1) << 4);
     write_register(NRF24L01P_REG_SETUP_RETR, new_setup_retr);
 }
 
