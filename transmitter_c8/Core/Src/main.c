@@ -57,6 +57,8 @@ static uint16_t adc_data[ADC_DATA_SIZE];
 
 static uint32_t buzzer_count;
 
+static uint16_t adc_battery;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -89,7 +91,7 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
 		tx_data[i] = ((uint8_t *)adc_data)[i - 1];
 	}
 	nrf24l01p_tx_transmit((uint8_t *)tx_data);
-
+	adc_battery = adc_data[7];
 }
 
 void USB_Rx_Process(uint8_t *Dat, uint32_t Len)
@@ -123,6 +125,17 @@ void buzz(int milliseconds)
 	// use toggle to control GPIO pin, should multiply 2
 
 	buzzer_count = milliseconds;
+}
+
+// calculate battery voltage
+double get_battery_voltage()
+{
+	// calculate voltage in voltage divider circuit
+	double dvoltage = adc_battery * 3.3 / 4095;
+
+	// 20k 9.1k
+	return (20 + 9.1) / 9.1 * dvoltage;
+
 }
 /* USER CODE END 0 */
 
@@ -180,6 +193,7 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  double battery_voltage;
   while (1)
   {
     /* USER CODE END WHILE */
@@ -191,6 +205,14 @@ int main(void)
 	  // transmit
 	  nrf24l01p_tx_transmit(tx_data);
 	  HAL_Delay(1000);*/
+
+	battery_voltage = get_battery_voltage();
+	if (battery_voltage < 6.6)
+	{
+		buzz(200);
+	}
+
+	HAL_Delay(1000);
   }
   /* USER CODE END 3 */
 }
